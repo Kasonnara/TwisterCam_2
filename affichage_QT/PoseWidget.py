@@ -79,10 +79,10 @@ class Pose:
 
 
 class PoseWidget(QLabel):
-    default_colors = (QColor("#FF0000"), QColor("#8904B1"), QColor("#FF8000"), QColor("#01DFD7"), QColor("#0404B4"))
-
     def __init__(self, ressource_directory, dim: QSize, player_size: QSize, player_ratio_spacing: float=0.33,
-                 alpha_color="#FF00FF", vertical_random_ratio=0.1, key_press_event_callback=None,
+                 alpha_color="#FF00FF", vertical_random_ratio=0.1, toggle_period=0.2,
+                 player_colors = ("#FF0000", "#8904B1", "#FF8000", "#01DFD7", "#0404B4"),
+                 key_press_event_callback=None,
                  dev_mode=False):
         """
         :param ressource_directory: String, chemin du dossier ressource.
@@ -97,6 +97,9 @@ class PoseWidget(QLabel):
             self.setStyleSheet("background-color:" + alpha_color)
         self.setMaximumSize(dim)
         self.setMinimumSize(dim)
+
+        self.default_colors = tuple(QColor(c) for c in player_colors)
+
 
         # Setup poses
         self.current_silhouette = None

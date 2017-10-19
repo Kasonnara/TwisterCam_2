@@ -4,7 +4,7 @@ import time
 from PyQt4 import QtGui
 
 from PyQt4.QtCore import QSize, QObject, pyqtSignal, Qt
-from PyQt4.QtGui import QApplication, QDesktopWidget, QVBoxLayout, QBoxLayout, QHBoxLayout
+from PyQt4.QtGui import QApplication, QDesktopWidget, QVBoxLayout, QBoxLayout, QHBoxLayout, QColor
 
 from LifeWidget import LifeWidget
 from TimerWidget import TimerWidget

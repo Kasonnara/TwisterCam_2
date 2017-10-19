@@ -99,7 +99,7 @@ game mode.
 
 - [ ] Remove custom configurations system and custom shell system.
 
-- [ ] Add a default set of silhouettes.
+- [X] Add a default set of silhouettes.
 
 - [ ] Add not random pose selection and on the fly pose selection.
 

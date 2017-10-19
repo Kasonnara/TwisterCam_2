@@ -1,10 +1,12 @@
 import threading
 import time
 from enum import Enum
-from TwistCamConf import TCConfig
-from TwistCamWindow import color_switching
 
-def gamecore_thread(env, config: TCConfig, verbose=False, dt=0.1):
+from PoseWidget import color_switching
+from TwistCamConf import TCConfig
+
+
+def gamecore_thread(env, config: TCConfig, verbose=False, dt=0.2):
     env["timer_value"] = config.start_pose_delay
     last_rounded_timer_value = 0
     while not (env["game_state"] == GameState.ENDING):
@@ -27,14 +29,12 @@ def gamecore_thread(env, config: TCConfig, verbose=False, dt=0.1):
             else:
                 # continue game sequence
                 if env["game_state"] == GameState.PLAYING and not config.timer_mode == TimerMode.DISABLED:
+                    env["tc_win"].s.toggle_color.emit()
                     env["timer_value"] -= dt
                     if not last_rounded_timer_value == round(env["timer_value"]):
                         last_rounded_timer_value = round(env["timer_value"])
                         env["tc_win"].s.set_timer.emit(last_rounded_timer_value)
                         print("    |GameCore, timer changed : %d" % (last_rounded_timer_value))
-                else:
-                    #game is paused
-                    pass
             time.sleep(dt)
         time.sleep(0.5)
     # Exit program
@@ -78,7 +78,7 @@ def end_round(env, config):
 
 def toggle_next_pose(env=None, config=None, n=1, **kwargs):
     env["sequence_index"] = env["sequence_index"] + n
-    env["current_validation"] = [env["life_values"][k]<0 for k in range(config.nbr_player)]
+    env["current_validation"] = [env["life_values"][k] < 0 for k in range(config.nbr_player)]
     if env["sequence_index"] < len(env["sequence"]) \
         and any(env["life_values"][k]>0 for k in range(config.nbr_player)):
         next_poses = env["sequence"][env["sequence_index"]][0]
