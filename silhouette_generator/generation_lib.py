@@ -1,14 +1,17 @@
 # coding=utf-8
+import threading
 
 import matplotlib.pyplot as plt
 import numpy as np
 from math import *
 
+import time
+
 """taille de l'image de preview
 (toutes les tailles suivantes doivent etres calculées relativement a celle ci)
 """
 PREVIEW_X_SIZE = 160
-PREVIEW_Y_SIZE = 190  # couper au buste : 110 , corps entier  : 190
+PREVIEW_Y_SIZE = 110  # couper au buste : 110 , corps entier  : 190
 
 """Hauteur du nombril dans l'image (distance entre le nombril et le haut de l'image)"""
 NOMBRIL_Y = 110
@@ -115,7 +118,7 @@ def check_epaisseur(dist_cible, dist_reel, epaisseur, trop_proche=False, trop_lo
 
 def generate_sil(a_epaule_gauche, a_epaule_droite, a_bras_gauche, a_bras_droite, a_cuisse_gauche=5, a_cuisse_droite=5,
                  a_genou_gauche=-5, a_genou_droit=-5, a_tete=0, a_body=0, flip=False, color=[0, 0, 1, 1], epaisseur=2,
-                 precision=1, image_sil=None):
+                 precision=1, image_sil=None, verbose=True):
     """Trace sur imageSil la silouette
         paramètre :
             a_epaule_gauche : float, angle de l'epaule gauche de la silouette (en degré)
@@ -187,12 +190,13 @@ def generate_sil(a_epaule_gauche, a_epaule_droite, a_bras_gauche, a_bras_droite,
                 i += 1
             if not (trop_loin or trop_proche):
                 image_sil[y, x] = color[:]
-        if y % 15 == 0:
+        if y % 15 == 0 and verbose:
             print("avancement", round(y / tailleY * 100), "%")
     return image_sil;
 
 
-def pregen(aeg, aed, abg, abd, acg=5, acd=5, agg=-5, agd=-5, at=0, ab=0, flip=False, color=[1, 1, 1, 1], filled=False):
+def pregen(aeg, aed, abg, abd, acg=5, acd=5, agg=-5, agd=-5, at=0, ab=0, flip=False, color=[1, 1, 1, 1], filled=False,
+           epaisseur=2):
     """Génère une preview de la silhouette, l'affiche
     et enfin demande si elle doit etre conservé
     auquelle cas une version HD est calculée et enregistrée
@@ -200,7 +204,7 @@ def pregen(aeg, aed, abg, abd, acg=5, acd=5, agg=-5, agd=-5, at=0, ab=0, flip=Fa
     """
     plt.cla()
     preview_img = generate_sil(aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, flip, color=[0, 0, 1, 1],
-                               epaisseur=(-1 if filled else 2), precision=1)
+                               epaisseur=(-1 if filled else epaisseur), precision=1)
     plt.imshow(preview_img)
     plt.pause(0.5)
     print("Conserver l'image? ne rien taper pour passer, sinon entrez un nom")
@@ -208,11 +212,34 @@ def pregen(aeg, aed, abg, abd, acg=5, acd=5, agg=-5, agd=-5, at=0, ab=0, flip=Fa
     if not (res == ""):
         import random
         res = res + str(random.randint(0, 10000))
-        print("Génération de l'image HD")
-        img = generate_sil(aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, flip, color=color,
-                           epaisseur=(-1 if filled else 2), precision=PRECISION)
-        print("sauvegarde de l'image : generation_random/" + res + ".png")
-        plt.imsave("generation_random/" + res + ".png", img)
+        print("Sauvegarde des preset de génération...")
+        save_pregen_params(res, aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, flip, color, filled, epaisseur)
+
+        def HD_gen_thread(): #TODO Trop Shlaggggggg
+            print("Génération de l'image HD en background (cela peut prendre quelques minutes)...")
+            img = generate_sil(aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, flip, color=color,
+                               epaisseur=(-1 if filled else epaisseur), precision=PRECISION, verbose=False)
+            print("Génération en background terminée, sauvegarde de l'image : generation_random/" + res + ".png")
+            plt.imsave("generation_random/" + res + ".png", img)
+
+        hd_thread = threading.Thread(target=HD_gen_thread)
+        hd_thread.start()
+        time.sleep(1)
+
+
+
+
+def save_pregen_params(name, aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, flip, color, filled,
+                       epaisseur):
+    with open("pregen.py.template", "r") as template:
+        with open("pregen_param_saves/" + name + ".py", "w") as destination:
+            s = ""
+            for l in template:
+                s += l
+            r = s.format(*[aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, flip, color, filled, epaisseur,
+                     PREVIEW_X_SIZE, PREVIEW_Y_SIZE, NOMBRIL_Y, LARGEUR_CORPS, LARGEUR_BRAS, LARGEUR_TETE,
+                     LARGEUR_JAMBE, DEMI_LONGUEUR_BRAS, LONGUEUR_BUSTE, LONGUEUR_COU, DEMI_LONGUEUR_JAMBE, PRECISION])
+            destination.write(r)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,8 @@
 import generation_lib as sgen
 
+FILLED=False
+COLOR = [0, 0, 0, 1]
+
 
 def generate_random(color=[1, 1, 1, 1], filled=False):
     import random
@@ -13,5 +16,5 @@ def generate_random(color=[1, 1, 1, 1], filled=False):
 
 
 if __name__ == '__main__':
-    generate_random(filled=True)
+    generate_random(color=COLOR, filled=FILLED)
 

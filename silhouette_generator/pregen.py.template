@@ -1,0 +1,29 @@
+# Angle de du manequin:
+aeg = {0}
+aed = {1}
+abg = {2}
+abd = {3}
+acg = {4}
+acd = {5}
+agg = {6}
+agd = {7}
+at = {8}
+ab = {9}
+flip = {10}
+color = {11}
+filled = {12}
+epaisseur = {13}
+
+#CONSTANTES
+PREVIEW_X_SIZE = {14}
+PREVIEW_Y_SIZE = {15}
+NOMBRIL_Y = {16}
+LARGEUR_CORPS = {17}
+LARGEUR_BRAS = {18}
+LARGEUR_TETE = {19}
+LARGEUR_JAMBE = {20}
+DEMI_LONGUEUR_BRAS = {21}
+LONGUEUR_BUSTE = {22}
+LONGUEUR_COU = {23}
+DEMI_LONGUEUR_JAMBE = {24}
+PRECISION = {25}
