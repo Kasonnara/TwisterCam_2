@@ -4,7 +4,7 @@ class TCConfig:
         self.generator_mode = "random"
 
         # Conf de la couleur du fond vert utilisé par TVn7 (HTML color)
-        self.fond_vert_color = "000000"
+        self.fond_vert_color = "00FF00"
 
         # Nombre de vie par joueur.
         self.nbr_lifes = 3
@@ -14,7 +14,7 @@ class TCConfig:
         self.nbr_poses = 9
 
         # Nombre de joueur dans la partie.
-        self.nbr_player = 2
+        self.nbr_player = 4
 
         # Nom de la 1e pose.
         # Si défini, la première pose d'une séquence sera toujour celle-ci
@@ -41,7 +41,7 @@ class TCConfig:
         self.timer_proportions = (0.14, 0.25)
         # Taille des barre de vie de chauqe joueur
         # Valeurs dans [0 .. 1] (1 équivaut a la largeur de l'écran)
-        self.life_proportions = (0.6, 0.2)
+        self.life_proportions = (0.72, 0.13)
         # Taille des silhouette de chauqe joueur
         # Valeurs dans [0 .. 1] (1 équivaut a la largeur de l'écran)
         self.player_proportions = (1, 0.7)
@@ -59,10 +59,10 @@ class TCConfig:
         self.timer_mode = TimerMode.EACH_POSE
 
         # Touche du clavier a utiliser pour valider les différents joueurs
-        self.validate_keys = (65, 32, 16777220, 43) # keys : 'a', space, enter, '+'
-
+        self.validate_keys = (65, 32, 16777220, 43) # keys : 'a', 'space', 'enter', '+'
 
     def copy(self):
+        # DO NOT EDIT
         new_conf = TCConfig()
         new_conf.__dict__ = self.__dict__.copy()
         return new_conf

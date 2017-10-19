@@ -4,7 +4,7 @@ import random
 import time
 from PyQt4 import QtGui
 from PyQt4.QtCore import QSize, Qt, QRect
-from PyQt4.QtGui import QPainter, QLabel, QPixmap
+from PyQt4.QtGui import QPainter, QLabel, QPixmap, QColor
 
 
 import file_tools.auto_param_config as apc
@@ -79,7 +79,7 @@ class Pose:
 
 
 class PoseWidget(QLabel):
-    default_colors = (Qt.red, Qt.blue, Qt.yellow, Qt.green)
+    default_colors = (QColor("#FF0000"), QColor("#8904B1"), QColor("#FF8000"), QColor("#01DFD7"), QColor("#0404B4"))
 
     def __init__(self, ressource_directory, dim: QSize, player_size: QSize, player_ratio_spacing: float=0.33,
                  alpha_color="#FF00FF", vertical_random_ratio=0.1, key_press_event_callback=None,
