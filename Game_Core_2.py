@@ -52,14 +52,16 @@ def play(env):
 def validate_player_pose(env, config, player_id):
     if env["game_state"] == GameState.PREVIEW \
        or env["game_state"] == GameState.PLAYING:
-        env["current_validation"][player_id] = True
-        print("    |Validation. state:%s" % env["current_validation"])
-        if config.animation_delay > 0:
+        if not env["current_validation"][player_id]:
+            env["current_validation"][player_id] = True
+            print("    |Validation. state:%s" % env["current_validation"])
             green_switching_thread = threading.Thread(target=color_switching,
-                                                      args=(env["tc_win"], player_id, "#05FF05", "#FFFFFF", 0.2, config.animation_delay))
+                                                      args=(env["tc_win"], player_id, "#FFFFFF", config.animation_delay))
             green_switching_thread.start()
-        if env["current_validation"].count(False) < 1:
-            end_round(env, config)
+            if env["current_validation"].count(False) <= 1:
+                end_round(env, config)
+        else:
+            print("Player %d is already validated!" % player_id)
     else:
         print("Validation refused, game state (%s) invalid for this action." % env["game_state"])
 
@@ -68,10 +70,14 @@ def end_round(env, config):
     for k in range(config.nbr_player):
         if not env["current_validation"][k]:
             env["life_values"][k] -= 1
-            # TODO animate red silhouette
+            red_switching_thread = threading.Thread(target=color_switching,
+                                                    args=(env["tc_win"], k, "#D00000", config.animation_delay))
+            red_switching_thread.start()
     env["tc_win"].s.set_lifes_alive.emit(env["life_values"])
     initial_TM, config.timer_mode = config.timer_mode, TimerMode.DISABLED
-    time.sleep(config.animation_delay)
+    for k in range(round(config.animation_delay / 0.2)):
+        env["tc_win"].s.toggle_color.emit()
+        time.sleep(0.2)
     config.timer_mode = initial_TM
     toggle_next_pose(env=env, config=config)
 

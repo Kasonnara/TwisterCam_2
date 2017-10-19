@@ -84,7 +84,7 @@ You can eventually customise these configuration files.
 
 - [X] Add multi-player mode.
 
-- [ ] Add color feedback animation for player.
+- [X] Add color feedback animation for player.
 
 - [ ] Add Intro and outro video clip.
 
@@ -92,7 +92,7 @@ You can eventually customise these configuration files.
 
 - [ ] Patch graphical bugs.
 
-- [ ] Patch validation bug.
+- [X] Patch validation bug.
 
 - [ ] Add remote control (nc or what ever) instead of key hitting in 
 game mode.

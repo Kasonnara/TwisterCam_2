@@ -98,12 +98,17 @@ class PoseWidget(QLabel):
         self.setMaximumSize(dim)
         self.setMinimumSize(dim)
 
+        # Init constant for toggling
+        self.toggle_period = toggle_period
+        self.toggle_state = 0
         self.default_colors = tuple(QColor(c) for c in player_colors)
+        self.toggle_colors = list([[QColor(c) for c in player_colors], [QColor(c) for c in player_colors]])
+        self.toggle_cache_pixmap = list([QPixmap(dim), QPixmap(dim)])
+        self.alpha_color = alpha_color
 
 
         # Setup poses
         self.current_silhouette = None
-        self.colors = list(self.default_colors)
         self.player_rect = QRect((dim.width() - player_size.width()) * 0.5,
                                  (dim.height() - player_size.height()) * 0.5,
                                  player_size.width(),
@@ -112,6 +117,8 @@ class PoseWidget(QLabel):
         self.vertical_random_ratio = vertical_random_ratio
         self.player_pixel_spacing = 0
         self.pose_dict = {}
+        self.vertical_random = ()
+        self.order = ()
         self._load_all_poses(ressource_directory, load_all_images=True, verbose=False,
                              filter_valid=True, dev_mode=dev_mode)
 
@@ -183,38 +190,53 @@ class PoseWidget(QLabel):
                                           (self.pose_dict[pose_name].get_silhouette(),)
             else:
                 print("Warning: Set_Pose d'une pose inconnue :", pose_name)
-        self.colors = list(self.default_colors)
-        self.update()
+        self.toggle_colors = [list(self.default_colors), list(self.default_colors)]
+        n = len(self.current_silhouette)
+        self.order = random.sample(range(n), n)
+        self.vertical_random = tuple(self.vertical_random_ratio * self.pose_hauteur * random.random() for k in self.default_colors)
+        self.repaint_poses(0)
+        print("truc")
+        self.repaint_poses(1)
+        self.toggle_color()
 
-    def paintEvent(self, *args):
-        #TODO OPTIMISE FOR MULTIPLE REPETITIVE CALL
-        super().paintEvent(*args)
+    def toggle_color(self):
+        self.toggle_state = (self.toggle_state + 1) % 2
+        self.setPixmap(self.toggle_cache_pixmap[self.toggle_state])
+
+    def repaint_poses(self, toggle_index):
+        painter = QPainter(self.toggle_cache_pixmap[toggle_index])
+        #painter.eraseRect(self.rect())
+        painter.fillRect(self.rect(), QColor(self.alpha_color))
+
         if self.current_silhouette is not None:
-            # Génération du QPainter
-            print("update started")
-            painter = QPainter(self)
-            # Effacer la pose précédente
-            painter.eraseRect(self.rect())
 
-            # get x axis coordonate of the center of the player 1st on the left
             left_center = self.player_rect.left() + 0.5 * self.player_rect.width() - self.player_pixel_spacing * (
                 len(self.current_silhouette) - 1) * 0.5
 
-            n = len(self.current_silhouette)
-            for k in random.sample(range(n), n):
-                vertical_random = self.vertical_random_ratio * self.pose_hauteur * random.random()
+            for k in self.order:
                 new_pixmap = QPixmap(self.pose_largeur, self.pose_hauteur)
-                new_pixmap.fill(self.colors[k])
+                new_pixmap.fill(self.toggle_colors[toggle_index][k])
                 new_pixmap.setMask(self.current_silhouette[k].pixmap.scaled(self.pose_largeur, self.pose_hauteur).mask())
                 painter.drawPixmap(int(left_center + k * self.player_pixel_spacing - (self.pose_largeur * 0.5)),
-                                   self.player_rect.top() + vertical_random,
+                                   self.player_rect.top() + self.vertical_random[k],
                                    self.pose_largeur,
                                    self.pose_hauteur,
                                    new_pixmap)
-                #self.setPixmap(silhouette.sil_pixmap.scaled(self.width(), self.height(), Qt.KeepAspectRatio))
+        painter.end()
 
     def keyPressEvent(self, e):
         self.key_press_event_callback(e)
+
+
+def color_switching(tc_win, player_id, new_HTML_color, duration):
+   if duration > 0:
+        new_color = QColor(new_HTML_color)
+        print(player_id, new_HTML_color)
+        tc_win.pose_widget.toggle_colors[0][player_id] = new_color
+        tc_win.s.repaint_poses.emit(0)
+        time.sleep(duration)
+        tc_win.pose_widget.toggle_colors[1][player_id] = new_color
+        tc_win.s.repaint_poses.emit(1)
 
 
 if __name__ == "__main__":

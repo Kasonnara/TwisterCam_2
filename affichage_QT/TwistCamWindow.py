@@ -1,4 +1,5 @@
 import sys
+import threading
 
 import time
 from PyQt4 import QtGui
@@ -155,7 +156,9 @@ class TwistCamWindow:
         if e.key() == Qt.Key_Escape:
             self.force_exit()
         elif e.key() in self.validate_keys:
-            self.validation_callback(self.validate_keys.index(e.key()))
+            validation_thread = threading.Thread(target=self.validation_callback,
+                                                 args=(self.validate_keys.index(e.key()),))
+            validation_thread.start()
         elif e.key() == 80:  # Todo config key
             self.play_callback()
 
@@ -164,7 +167,8 @@ class TwistCamWindow:
         set_poses = pyqtSignal(tuple)
         set_lifes_alive = pyqtSignal(list)
         set_poses_visibility = pyqtSignal(tuple)
-        update_pose = pyqtSignal()
+        toggle_color = pyqtSignal()
+        repaint_poses = pyqtSignal(int)
         force_exit = pyqtSignal()
 
         def __init__(self, tc_win):
@@ -174,24 +178,10 @@ class TwistCamWindow:
             self.set_poses.connect(tc_win.pose_widget.set_poses)
             self.set_lifes_alive.connect(tc_win.set_lifes_alive)
             self.set_poses_visibility.connect(tc_win.set_poses_visibility)
-            self.update_pose.connect(tc_win.pose_widget.repaint)
+            self.toggle_color.connect(tc_win.pose_widget.toggle_color)
+            self.repaint_poses.connect(tc_win.pose_widget.repaint_poses)
             self.force_exit.connect(tc_win.force_exit)
 
-
-def color_switching(tc_win, player_id, first_color, second_color, period, duration):
-    print("color switching start")
-    first_color = QtGui.QColor(first_color)
-    second_color= QtGui.QColor(second_color)
-    for k in range(round(duration / period)):
-        tc_win.pose_widget.colors[player_id] = first_color
-        #tc_win.s.update_pose.emit()
-        time.sleep(period * 0.5)
-        print("color toggle")
-        tc_win.pose_widget.colors[player_id] = second_color
-        #tc_win.s.update_pose.emit()
-        tc_win.s.set_timer.emit()
-        time.sleep(period * 0.5)
-    print('color switching end.')
 
 if __name__ == "__main__":
     print("TwistCamWindow test start...")
