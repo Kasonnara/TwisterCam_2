@@ -1,3 +1,5 @@
 matplotlib==1.4.2
-PyQt4==4.11.4
 numpy==1.13.3
+PyQt4==4.11.4
+Twisted==17.5.0
+

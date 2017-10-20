@@ -20,7 +20,7 @@ parameters and placing your screen on the right.
 on the right of your main screen but notice that arandr reset lxrandr 
 configurations and vice versa.
 
-> If you use multiple desktop, it's a good idea to tell the game window 
+> If you use multiple desktop, it's a good idea to set the game window 
 to be displayed on all desktops to avoid miss manipulations.
 
 ### Usage, Game:
@@ -28,7 +28,8 @@ to be displayed on all desktops to avoid miss manipulations.
 - Set config file : `TwistCamConf.py`, default configuration is for 2 players, 
 another configuration file is committed for 1 player (TwistCamConf(1player).py).
 
-> If the game does not scale well on screen, it may be 'screen_id' value which 
+> If the game does not scale well on screen, first try restart the game then  
+if it doesn't solve the problem it may be 'screen_id' value which 
 define the index of the screen to use, which may change from a computer to another. 
 If it doesn't solve then try changing '*_proportions' configs.
 
@@ -94,7 +95,7 @@ You can eventually customise these configuration files.
 
 - [X] Patch validation bug.
 
-- [ ] Add remote control (nc or what ever) instead of key hitting in 
+- [X] Add remote control (nc or what ever) instead of key hitting in 
 game mode.
 
 - [ ] Remove custom configurations system and custom shell system.
@@ -104,3 +105,5 @@ game mode.
 - [ ] Add not random pose selection and on the fly pose selection.
 
 - [ ] Add interactive poses.
+
+- [ ] Use Locks (Not thread safe).

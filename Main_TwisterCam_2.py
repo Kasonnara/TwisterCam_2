@@ -2,6 +2,8 @@ import sys
 import time
 import threading
 
+import nc_control
+
 sys.path.append("./affichage_QT")
 import affichage_QT as aqt
 import Game_Core_2 as gc
@@ -99,6 +101,11 @@ if __name__ == '__main__':
     terminal_thread = threading.Thread(target=gu.control_thread, args=(env, conf))
     terminal_thread.setDaemon(True)
     terminal_thread.start()
+
+    print("|Start listening for TCP")
+    tcp_thread = threading.Thread(target=nc_control.start_nc_receiver, args=(env, conf))
+    tcp_thread.setDaemon(True)
+    tcp_thread.start()
 
     # Start graphical interface, and restart it if it is rebuild
     while not env["game_state"] == gc.GameState.ENDING:
