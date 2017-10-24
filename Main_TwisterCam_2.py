@@ -99,11 +99,13 @@ if __name__ == '__main__':
     terminal_thread.setDaemon(True)
     terminal_thread.start()
 
-    print("|Start listening for TCP")
-    tcp_thread = threading.Thread(target=nc_control.start_nc_receiver, args=(env, conf))
-    tcp_thread.setDaemon(True)
-    tcp_thread.start()
-
+    if conf.remote_control:
+        print("|Start remote TCP control")
+        tcp_thread = threading.Thread(target=nc_control.start_nc_receiver, args=(env, conf))
+        tcp_thread.setDaemon(True)
+        tcp_thread.start()
+    else:
+        print("|Remote TCP control is disabled")
     # Start graphical interface, and restart it if it is rebuild
     while not env["game_state"] == gc.GameState.ENDING:
         env["tc_win"].main_app.exec_()
