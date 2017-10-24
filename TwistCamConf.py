@@ -11,7 +11,7 @@ class TCConfig:
         self.life_enabled = True
 
         # Nombre de pose par séquence.
-        self.nbr_poses = 9
+        self.nbr_poses = 12
 
         # Nombre de joueur dans la partie.
         self.nbr_player = 4
@@ -40,17 +40,17 @@ class TCConfig:
         # Valeurs dans [0 .. 1] (1 équivaut a la largeur de l'écran)
         self.timer_proportions = (0.14, 0.25)
         # Taille des barre de vie de chauqe joueur
-        # Valeurs dans [0 .. 1] (1 équivaut a la largeur de l'écran)
-        self.life_proportions = (0.72, 0.13)
+        # Valeurs dans [0 .. 1] (1 équivaut a la largeur de l'écran)(RQ la donnée horizontal est ingorée en multijoueur)
+        self.life_proportions = (0.5, 0.15)
         # Taille des silhouette de chauqe joueur
         # Valeurs dans [0 .. 1] (1 équivaut a la largeur de l'écran)
         self.player_proportions = (1, 0.7)
         # Écart entre chaque joueur
         # /!\ dans [0 .. 1] (1 équivaut à la largeur D'UN JOUEUR !!)
-        self.player_spacing_proportion = 0.33
+        self.player_spacing_proportion = 0.25
         # Écart entre chaque barre de vie en mode multiplayer
         # /!\ dans [0 .. 1] (1 équivaut à la largeur D'UN JOUEUR !!)
-        self.multi_life_spacing_proportion = 0.12
+        self.multi_life_spacing_proportion = 0.10
         # Mode de fonctionnement du timer (FULL_GAME | EACH_POSE | DISABLED)
         # FULL_GAME : means 1 timer for the full sequence.
         # EACH_POSE : means the timer is reset with each pose.

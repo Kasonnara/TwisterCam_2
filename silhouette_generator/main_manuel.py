@@ -2,27 +2,27 @@ import generation_lib
 
 # Angle de du manequin:
 # Angle épaule gauche
-aeg = 55
+aeg = -75
 # Angle épaule droite
-aed = -60
+aed = -75
 # Angle coude gauche
-abg = 85
+abg = -75
 # Angle coude droit
-abd = -10
+abd = -75
 # Angle cuisse gauche [5]
-acg = 20
+acg = 5
 # Angle cuisse droite [5]
-acd = 20
+acd = 5
 # Angle genou gauche [-5]
-agg = -20
+agg = -5
 # Angle genou droit [-5]
-agd = 10
+agd = -5
 # Angle de la tête [0]
-at = -5
+at = 0
 # Angle du buste [0]
-ab = 10
-# Retourner tout le corps [False]
-flip = False
+ab = 0
+# Rotation tout le corps [0]
+a_full_body = 0
 # Couleur de l'image finale [[1,1,1,1]]
 color = [0, 0, 0, 1]
 # Silouette pleine [False]

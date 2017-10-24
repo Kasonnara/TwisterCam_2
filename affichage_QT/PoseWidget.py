@@ -105,7 +105,6 @@ class PoseWidget(QLabel):
         self.toggle_cache_pixmap = list([QPixmap(dim), QPixmap(dim)])
         self.alpha_color = alpha_color
 
-
         # Setup poses
         self.current_silhouette = None
         self.player_rect = QRect((dim.width() - player_size.width()) * 0.5,

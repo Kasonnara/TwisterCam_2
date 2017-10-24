@@ -60,7 +60,8 @@ class TCConfig:
 
         # Touche du clavier a utiliser pour valider les différents joueurs
         self.validate_keys = (65, 32, 16777220, 43) # keys : 'a', space, enter, '+'
-
+        # Enable remote control with tcp connexions
+        self.remote_control = True
 
     def copy(self):
         new_conf = TCConfig()

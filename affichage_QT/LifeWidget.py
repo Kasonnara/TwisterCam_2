@@ -54,8 +54,6 @@ class LifeWidget(QLabel):
                                 math.floor(vertical_space*0.5 - self.DEFAULT_FUCKING_MARGIN))
         self.set_alive(0)
 
-    # TODO def adjustSize , to resize the widget
-
     def _load_life_picture(self, ressource_directory):
         """Load les Pixelmap des images des vies
         Utile a l'initialisation"""
@@ -78,6 +76,7 @@ class LifeWidget(QLabel):
         :param new_state: boolean, the new state of visibility.
         :return: None
         """
+        # TODO invert boolean meaning to correspond to validity
         for label in self.life_labels:
             label.setVisible(new_state)
 

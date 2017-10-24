@@ -88,10 +88,11 @@ You can eventually customise these configuration files.
 - [X] Add color feedback animation for player.
 
 - [ ] Add Intro and outro video clip.
-
+    - [X] Outo animated manuelly.
+    - [ ] Intro/Outro video pre-computed.
 - [X] Patch end of game bugs.
 
-- [ ] Patch graphical bugs. (Almost patched, remaining bug are not critical)
+- [ ] Patch graphical bugs. (not critical)
 
 - [X] Patch validation/reload bugs.
 
