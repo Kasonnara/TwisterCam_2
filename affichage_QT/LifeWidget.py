@@ -1,4 +1,5 @@
 import math
+
 from PyQt4 import QtGui
 from PyQt4.QtCore import QSize
 from PyQt4.QtCore import Qt

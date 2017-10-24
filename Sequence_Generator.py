@@ -49,7 +49,7 @@ def Generate_Sequence(generator_mode, nbr_poses, pose_dict, delay, nbr_player, s
         result_seq = result_seq + Add_Random_Pose(nbr_poses, pose_dict, nbr_player,
                                                   (("" if len(result_seq) == 0 else result_seq[-1]),) * nbr_player, delay)
     elif generator_mode == "select":
-        pass
+        raise ValueError("Sequence manuelles non implémenté! DSL")
         ## lancer un shell avec draw_func pour bien afficher la liste des poses disponnible et séléctionnées
     else:
         raise ValueError("Genrerate_Sequence : generate_mode inconnu :%s" % generator_mode)

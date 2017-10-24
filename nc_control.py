@@ -1,23 +1,21 @@
 import os
 import threading
-from threading import Thread
 
+from twisted.internet import reactor
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineReceiver
-import twisted
-from twisted.internet import reactor
 
 import Game_Core_2
 
 player_allocation = None
 
+
 class NcReceiver(LineReceiver):
     def __init__(self, env, config):
-        self.thread = None # For ensuring to not lose messages. TODO
-        self.env = env # for calling validation
-        self.config = config # for calling calidation
-        self.allocation = None # id of the player affected to the TCP connexion
+        self.env = env  # for calling validation
+        self.config = config  # for calling validation
+        self.allocation = None  # id of the player affected to the TCP connexion
 
     def connectionMade(self):
         print("Connection made.")
@@ -97,19 +95,20 @@ class ValiderFactory(Factory):
     def buildProtocol(self, addr):
         return NcReceiver(self.env, self.config)
 
+
 def print_own_ip():
     # TRÈS TRÈS MOCHE, non portable TODO remake
-    s = os.system("ip a | grep 'inet ' | grep 'wlan'")
+    os.system("ip a | grep 'inet ' | grep 'wlan'")
 
 
 def start_nc_receiver(env, config, port=1117):
+    # Init TCP remote control
     global player_allocation
     player_allocation = [False] * config.nbr_player
-    # Init listening
     endpoint = TCP4ServerEndpoint(reactor, port)
     endpoint.listen(ValiderFactory(env, config))
     print("Run tcp listener on port %d,\nip:" % (port,), end="")
     print_own_ip()
     reactor.run(installSignalHandlers=0)
-    print("TCP Receiver exited.")
+    print("TCP receiver exited.")
 

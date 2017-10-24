@@ -27,7 +27,7 @@ class TCConfig:
         self.start_pose_delay = 7
 
         # delai des animation de reussite/echec
-        self.animation_delay = 0
+        self.animation_delay = 2
 
         # ------------ Gestion de L'INTERFACE --------------
         # L'identifiant de l'écran a utiliser, a priori -1, testez différentes valeur si le dimensionnement de l'interface est raté.

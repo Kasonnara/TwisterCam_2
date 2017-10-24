@@ -1,9 +1,9 @@
-import file_tools.basic_custom_shell as bcs
 import time
 
+import file_tools.basic_custom_shell as bcs
 import Game_Core_2 as gc
-import Sequence_Generator as sg
 from Main_TwisterCam_2 import rebuild_interface
+import Sequence_Generator as sg
 
 
 def control_thread(env, conf):
@@ -14,7 +14,8 @@ def control_thread(env, conf):
     # aliases du shell
     aliases = {"generate_sequence": "gen_seq", "new_seq": "gen_seq", "new": "gen_seq", "view": "preview",
                "start": "play"}
-    print(" |Start TwisterCam command shell\n")
+    time.sleep(1)
+    print(" |Start TwisterCam command shell")
     bcs.shell(env, commandes, aliases=aliases, config=conf, shell_prompt="TwisterCam >>>")
     # Terminaison du programme
     env["tc_win"].s.force_exit.emit()
@@ -31,7 +32,7 @@ def start_game(config=None, env=None, params=[], preview=False, **kwargs):
             return "preview : passe le shell en mode préview, qui affichera la prochaine séquence et de nouvelle " \
                    "commande pour les modifications temporaire de la conf (reglage des images (taille et offset), etc) "
         else:
-            return "play : passe le shell directement en mode jeu, déconseillé, le mode preview permet de passer en " \
+            return "play : passe le shell directement en mode jeu, le mode preview permet de passer en " \
                    "mode jeu avec plus de possibilité de réglage "
     else:
         print("  |Starting a game...")
@@ -46,10 +47,13 @@ def start_game(config=None, env=None, params=[], preview=False, **kwargs):
 
 
 def call_gen_seq(config=None, env=None, params=[], **kwargs):
-        """ Fonction respectant le standard des commande de mon shell custom"""
-        # TODO adapt to multplayer
+        """ Fonction respectant le standard des commande de mon shell custom
+        Permet de générer une sequence manuellement, avec des paramètres spéciaux
+        Trèspeu utilisé en pratique"""
         if params == None:
-            return "gen_seq : utilitaire de génération de sequences\n    Utilisation:'gen_seq [nbr_pose [mode [type]]]'\n      nbr_pose : integer >0, le nombre de pose de la séquence;  default: valeur de la config a la clé 'nbr_poses'\n      mode : (random|select), le mode de création de la séquence; default: valeur de la config a la clé 'generator_mode'\n      type : (anime|fixe|mur), le type de séquence;  default: valeur de la config a la clé 'sequence_type'"
+            return "gen_seq : utilitaire de génération de sequences" \
+                   "\n  Permet de génerer namuellement des séquences custom, mais peut utile, en pratique." \
+                   "\n    Utilisation:'gen_seq [nbr_pose [mode [type]]]'\n      nbr_pose : integer >0, le nombre de pose de la séquence;  default: valeur de la config a la clé 'nbr_poses'\n      mode : (random|select), le mode de création de la séquence; default: valeur de la config a la clé 'generator_mode'\n      type : (anime|fixe|mur), le type de séquence;  default: valeur de la config a la clé 'sequence_type'"
         else:
             # lancer la fonction en donnant priorité aux paramètres facultatif, et a la config en deuxième recours
             result = sg.Generate_Sequence(params[2] if len(params) > 1 else config.generator_mode,
@@ -106,7 +110,7 @@ def Start_interface_preview(config=None, env=None, params=[], **kwargs):
                   shell_prompt="TwisterCam [preview] >>>")
         print("   |-----  Sortie du mode 'Preview' -----")
         env["stop"] = False
-        env["game_state"] = gc.GameState.HIDLE
+        env["game_state"] = gc.GameState.IDLE
         print("Voulez vous lancer le jeu avec cette configuration?[y/n] >>> ")
         reponse = input()
         if reponse == "y" or reponse == "o" or reponse.find("yes") > -1 or reponse.find("oui") > (-1):
@@ -168,9 +172,8 @@ def Start_interface_cam(config=None, env=None, params=[], **kwargs):
     else:
         loc_conf = config.copy()
         print("   |===== Passage en mode 'Jeu' =====")
-        #gc.reset_game(env, config)
         bcs.shell(env, cam_commandes, aliases=cam_aliases, config=loc_conf, config_path=env["config_path"],
                   shell_prompt="TwisterCam [jeu] >>>")
-        env["game_state"] = gc.GameState.HIDLE
+        env["game_state"] = gc.GameState.IDLE
         env["stop"] = False
         print("   |=====  Sortie du mode 'Jeu' =====")

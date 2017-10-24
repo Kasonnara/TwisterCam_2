@@ -1,11 +1,10 @@
 import os
 import random
-
 import time
+
 from PyQt4 import QtGui
 from PyQt4.QtCore import QSize, Qt, QRect
 from PyQt4.QtGui import QPainter, QLabel, QPixmap, QColor
-
 
 import file_tools.auto_param_config as apc
 
@@ -195,7 +194,6 @@ class PoseWidget(QLabel):
         self.order = random.sample(range(n), n)
         self.vertical_random = tuple(self.vertical_random_ratio * self.pose_hauteur * random.random() for k in self.default_colors)
         self.repaint_poses(0)
-        print("truc")
         self.repaint_poses(1)
         self.toggle_color()
 

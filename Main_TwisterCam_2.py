@@ -1,10 +1,8 @@
 import sys
-import time
 import threading
+import time
 
 import nc_control
-from Game_Core_2 import reset_game
-
 sys.path.append("./affichage_QT")
 import affichage_QT as aqt
 import Game_Core_2 as gc
@@ -18,12 +16,12 @@ def init_full(config, env, dev_mode=False, **kwargs):
     env["silhouette_dict"] = env[
         "tc_win"].pose_widget.pose_dict  # TODO inverser, le cam win devrait reprendre les pose de l'env plutot que l'inverse
     if dev_mode:
-        print(" |Initiate game status data.")
+        print(" |Initiate game try data.")
     env["life_values"] = [config.nbr_lifes for k in range(config.nbr_player)]
     env["sequence"] = []
     env["current_validation"] = [False for k in range(config.nbr_player)]
     env["sequence_index"] = 0
-    env["game_state"] = gc.GameState.HIDLE
+    env["game_state"] = gc.GameState.IDLE
 
 
 def rebuild_interface(config=None, env=None, params=(), **kwargs):
@@ -75,7 +73,9 @@ def rebuild_interface(config=None, env=None, params=(), **kwargs):
 
 if __name__ == '__main__':
     if "help" in sys.argv:
-        print("Help not implemented yet!\n parameter possible:\n 'dev_mode' for all debug\n or 'dev_mode_g' for debugging graphical interface\n or 'dev_mode_c' for debugging core")  # TODO!!
+        print("Help not implemented yet!\n parameter possible:"
+              "\n 'dev_mode' for all debug\n or 'dev_mode_g' for debugging graphical interface"
+              "\n or 'dev_mode_c' for debugging core")  # TODO
         sys.exit(0)
     print("Starting TWISTERCAM")
 

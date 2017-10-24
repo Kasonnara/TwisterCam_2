@@ -13,7 +13,7 @@ def gamecore_thread(env, config: TCConfig, verbose=False, dt=0.2):
     while not (env["game_state"] == GameState.ENDING):
         while env["game_state"] == GameState.PLAYING or env["game_state"] == GameState.WAIT_PLAY:
             if env["sequence"] is None or len(env["sequence"]) <= env["sequence_index"]:
-                end_game(env, verbose=verbose)
+                end_game(env)
                 raise ValueError("Not normal ending!")
             if env["timer_value"] < 0:
                 if config.timer_mode == TimerMode.EACH_POSE:
@@ -26,7 +26,7 @@ def gamecore_thread(env, config: TCConfig, verbose=False, dt=0.2):
                         print("    |GameCore, time-up : everyone lose.")
                     env["life_values"] = [0] * config.nbr_player
                     env["tc_win"].s.set_lifes_alive.emit(env["life_values"])
-                    end_game(env, verbose=verbose)
+                    end_game(env)
             else:
                 # continue game sequence
                 if env["game_state"] == GameState.PLAYING and not env["timer_mode"] == TimerMode.DISABLED:
@@ -38,7 +38,6 @@ def gamecore_thread(env, config: TCConfig, verbose=False, dt=0.2):
                         print("    |GameCore, timer changed : %d" % (last_rounded_timer_value))
             time.sleep(dt)
         time.sleep(0.5)
-    # Exit program
     print("#Core thread exited.")
 
 
@@ -86,16 +85,18 @@ def toggle_next_pose(env=None, config=None, n=1, **kwargs):
     env["sequence_index"] = env["sequence_index"] + n
     env["current_validation"] = [env["life_values"][k] <= 0 for k in range(config.nbr_player)]
     if env["sequence_index"] < len(env["sequence"]) \
-        and any(env["life_values"][k]>0 for k in range(config.nbr_player)):
+       and any(env["life_values"][k] > 0 for k in range(config.nbr_player)):
         next_poses = env["sequence"][env["sequence_index"]][0]
         # hide eliminated players
-        next_poses = tuple(pose if env["life_values"][k] > 0 else "" for k,pose in enumerate(next_poses))
+        next_poses = tuple(pose if env["life_values"][k] > 0 else "" for k, pose in enumerate(next_poses))
         env["tc_win"].s.set_poses.emit(next_poses)
         env["tc_win"].s.set_poses_visibility.emit(tuple(not v for v in env["current_validation"]))
+        # reset timer if necessary
         if config.timer_mode == TimerMode.EACH_POSE:
             env["timer_value"] = env["sequence"][env["sequence_index"]][1]
             env["tc_win"].s.set_timer.emit(int(env["timer_value"]))
         print("    |GameCore, switch next pose", env["sequence"][env["sequence_index"]][0])
+        # Restart timer
         env["timer_mode"] = config.timer_mode
     else:
         end_game(env)
@@ -112,13 +113,13 @@ def end_game(env):
 
 
 def reset_game(env, config):
-    if env["game_state"] == GameState.HIDLE or env["game_state"] == GameState.WAIT_RELOAD:
+    if env["game_state"] == GameState.IDLE or env["game_state"] == GameState.WAIT_RELOAD:
         env["life_values"] = [config.nbr_lifes for k in range(config.nbr_player)]
         env["tc_win"].s.set_lifes_alive.emit(env["life_values"])
         env["current_validation"] = [False for k in range(config.nbr_player)]
         env["sequence_index"] = 0
         env["timer_mode"] = config.timer_mode
-        # try generate env["sequence"] if it is not
+        # try generate env["sequence"] if it doesn't exist yet
         if check_seq_exist(env, config):
             env["tc_win"].s.set_poses.emit(env['sequence'][0][0])
             env["tc_win"].s.set_timer.emit(env['sequence'][0][1])
@@ -128,8 +129,9 @@ def reset_game(env, config):
 
 
 def check_seq_exist(env, config):
+    # Check if sequence already exist
     if env["sequence"] is None or len(env["sequence"]) == 0:
-        # pas de séquence prévue
+        # Select generation mode, TODO add other modes
         if config.generator_mode == "random":
             # mode random donc on génère une sequence a la volé
             env["sequence"] = Generate_Sequence(config.generator_mode,
@@ -147,7 +149,7 @@ def check_seq_exist(env, config):
 
 
 class GameState(Enum):
-    HIDLE = 0  # application dans son état initial, attend une commande pour agir
+    IDLE = 0  # application dans son état initial, attend une commande pour agir
     PREVIEW = 1  # mode préview, affiché en condition réelle (coté TVn7)
     PREVIEW_HIDE = 2  # mode préview affiché coté net7
     WAIT_PLAY = 3  # partie prête, attend seulement la top départ.
@@ -164,3 +166,4 @@ class TimerMode(Enum):
 
 if __name__ == '__main__':
     print("Ce module ne fait rien seul, veuillez utiliser Main_TwisterCam.py ")
+
