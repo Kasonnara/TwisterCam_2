@@ -89,11 +89,11 @@ You can eventually customise these configuration files.
 
 - [ ] Add Intro and outro video clip.
 
-- [ ] Patch end of game bugs.
+- [X] Patch end of game bugs.
 
-- [ ] Patch graphical bugs.
+- [ ] Patch graphical bugs. (Almost patched, remaining bug are not critical)
 
-- [X] Patch validation bug.
+- [X] Patch validation/reload bugs.
 
 - [X] Add remote control (nc or what ever) instead of key hitting in 
 game mode.

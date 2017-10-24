@@ -4,6 +4,7 @@ from enum import Enum
 
 from PoseWidget import color_switching
 from TwistCamConf import TCConfig
+from Sequence_Generator import Generate_Sequence
 
 
 def gamecore_thread(env, config: TCConfig, verbose=False, dt=0.2):
@@ -28,7 +29,7 @@ def gamecore_thread(env, config: TCConfig, verbose=False, dt=0.2):
                     end_game(env, verbose=verbose)
             else:
                 # continue game sequence
-                if env["game_state"] == GameState.PLAYING and not config.timer_mode == TimerMode.DISABLED:
+                if env["game_state"] == GameState.PLAYING and not env["timer_mode"] == TimerMode.DISABLED:
                     env["tc_win"].s.toggle_color.emit()
                     env["timer_value"] -= dt
                     if not last_rounded_timer_value == round(env["timer_value"]):
@@ -43,10 +44,10 @@ def gamecore_thread(env, config: TCConfig, verbose=False, dt=0.2):
 
 def play(env):
     if env["game_state"] == GameState.WAIT_PLAY:
-        print("   |GameCore, Starting Game.")
         env["game_state"] = GameState.PLAYING
+        return True
     else:
-        print("   |GameCore, Not ready, starting aborted.")
+        return False
 
 
 def validate_player_pose(env, config, player_id):
@@ -67,6 +68,7 @@ def validate_player_pose(env, config, player_id):
 
 
 def end_round(env, config):
+    env["timer_mode"] = TimerMode.DISABLED
     for k in range(config.nbr_player):
         if not env["current_validation"][k]:
             env["life_values"][k] -= 1
@@ -74,34 +76,74 @@ def end_round(env, config):
                                                     args=(env["tc_win"], k, "#D00000", config.animation_delay))
             red_switching_thread.start()
     env["tc_win"].s.set_lifes_alive.emit(env["life_values"])
-    initial_TM, config.timer_mode = config.timer_mode, TimerMode.DISABLED
     for k in range(round(config.animation_delay / 0.2)):
         env["tc_win"].s.toggle_color.emit()
         time.sleep(0.2)
-    config.timer_mode = initial_TM
     toggle_next_pose(env=env, config=config)
 
 
 def toggle_next_pose(env=None, config=None, n=1, **kwargs):
     env["sequence_index"] = env["sequence_index"] + n
-    env["current_validation"] = [env["life_values"][k] < 0 for k in range(config.nbr_player)]
+    env["current_validation"] = [env["life_values"][k] <= 0 for k in range(config.nbr_player)]
     if env["sequence_index"] < len(env["sequence"]) \
         and any(env["life_values"][k]>0 for k in range(config.nbr_player)):
         next_poses = env["sequence"][env["sequence_index"]][0]
         # hide eliminated players
         next_poses = tuple(pose if env["life_values"][k] > 0 else "" for k,pose in enumerate(next_poses))
         env["tc_win"].s.set_poses.emit(next_poses)
+        env["tc_win"].s.set_poses_visibility.emit(tuple(not v for v in env["current_validation"]))
         if config.timer_mode == TimerMode.EACH_POSE:
             env["timer_value"] = env["sequence"][env["sequence_index"]][1]
             env["tc_win"].s.set_timer.emit(int(env["timer_value"]))
         print("    |GameCore, switch next pose", env["sequence"][env["sequence_index"]][0])
+        env["timer_mode"] = config.timer_mode
     else:
-        end_game(env, config)
+        end_game(env)
 
 
-def end_game(env, config, **kwargs):
-    print("    |GamCore: End of game requested.")
-    env["game_state"] = GameState.WAIT_RELOAD
+def end_game(env):
+    if env["game_state"] == GameState.WAIT_PLAY or env["game_state"] == GameState.PLAYING:
+        env["game_state"] = GameState.WAIT_RELOAD
+        env["sequence"] = None
+        print("    |GameCore, Game ended!")
+        return True
+    else:
+        return False
+
+
+def reset_game(env, config):
+    if env["game_state"] == GameState.HIDLE or env["game_state"] == GameState.WAIT_RELOAD:
+        env["life_values"] = [config.nbr_lifes for k in range(config.nbr_player)]
+        env["tc_win"].s.set_lifes_alive.emit(env["life_values"])
+        env["current_validation"] = [False for k in range(config.nbr_player)]
+        env["sequence_index"] = 0
+        env["timer_mode"] = config.timer_mode
+        # try generate env["sequence"] if it is not
+        if check_seq_exist(env, config):
+            env["tc_win"].s.set_poses.emit(env['sequence'][0][0])
+            env["tc_win"].s.set_timer.emit(env['sequence'][0][1])
+            env["game_state"] = GameState.WAIT_PLAY
+            return True
+    return False
+
+
+def check_seq_exist(env, config):
+    if env["sequence"] is None or len(env["sequence"]) == 0:
+        # pas de séquence prévue
+        if config.generator_mode == "random":
+            # mode random donc on génère une sequence a la volé
+            env["sequence"] = Generate_Sequence(config.generator_mode,
+                                                config.nbr_poses,
+                                                env["silhouette_dict"],
+                                                config.pose_delay,
+                                                config.nbr_player,
+                                                start_pose=config.start_pose)
+    if not (env["sequence"] == None or len(env["sequence"]) == 0):
+        print("    |Séquence OK.")
+        return True
+    else:
+        print("Impossible de démarrer le jeu, aucune sequence n'est définie.")
+        return False
 
 
 class GameState(Enum):

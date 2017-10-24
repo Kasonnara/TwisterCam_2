@@ -1,4 +1,6 @@
 import file_tools.basic_custom_shell as bcs
+import time
+
 import Game_Core_2 as gc
 import Sequence_Generator as sg
 from Main_TwisterCam_2 import rebuild_interface
@@ -33,22 +35,11 @@ def start_game(config=None, env=None, params=[], preview=False, **kwargs):
                    "mode jeu avec plus de possibilité de réglage "
     else:
         print("  |Starting a game...")
-        if env["sequence"] is None or len(env["sequence"]) == 0:
-            # pas de séquence prévue
-            if config.generator_mode == "random":
-                # mode random donc on génère une sequence a la volé
-                env, config = call_gen_seq(config=config, env=env, params=[])
-            else:
-                print("Impossible de démarrer le jeu, aucune sequence n'est définie")
-                return None
-        if not (env["sequence"] is None or len(env["sequence"]) == 0):
+        if gc.reset_game(env, config):
             if preview:
                 Start_interface_preview(config=config, env=env, params=params, **kwargs)
             else:
                 Start_interface_cam(config=config, env=env, params=params, **kwargs)
-            # Reset sequence
-            env["sequence"] = None
-            env["sequence_index"] = 0
         else:
             print("Erreur pas de séquence disponnible")
         return env, config
@@ -70,15 +61,8 @@ def call_gen_seq(config=None, env=None, params=[], **kwargs):
             # enregistrer le result dans l'env s'il est fructueux
             if not (result == None or len(result[0]) == 0):
                 print("    |Génération Réussie.")
-                env["life_values"] = [config.nbr_lifes for k in range(config.nbr_player)]
-                env["tc_win"].s.set_lifes_alive.emit(env["life_values"]) # TODO may be duplicated in MAIN_TwisterCam_2.reset_game
-
-                env['sequence'] = result # Todo move to Main..2.reset_game
-                env["tc_win"].s.set_poses.emit(env['sequence'][0][0])
-                env["tc_win"].s.set_timer.emit(env['sequence'][0][1])
-                return env, config
             else:
-                raise ValueError("Sequence generation failed.")
+                print("    |Sequence generation failed.")
 
 
 # --------------------------------Commandes active pendant le mode préview -----------------------------
@@ -144,17 +128,31 @@ def play(env=None, params=None, **kwargs):
         gc.play(env)
 
 
-def stop(env=None, params=None, **kwargs):
+def break_game(env=None, params=None, **kwargs):
     if params is None:
         return "stop : met le jeu en mode pause, a priori pas besoin, sauf si necessité absolu pour pépin technique " \
                "\n    Utilisation : 'stop' "
     else:
-        if env["game_state"] == gc.GameState.WAIT_PLAY or env["game_state"] == gc.GameState.PLAYING:
-            env["game_state"] = gc.GameState.WAIT_RELOAD
+        if gc.end_game(env):
+            print("    |GamCore: End of game requested.\nNow, you can use 'reload', when TVn7 cut the game .")
+        else:
+            print("    |GamCore: Current state incompatible for ending.")
 
 
-cam_commandes = {"play": play, "stop": stop, "default": toggle_next_pose}
-cam_aliases = {"s": "stop", "p": "play", "n": "default", "v": "default", "next_pose": "default"}
+def reload(env=None, config=None, params=None, **kwargs):
+    if params is None:
+        return "reload : re-initialise l'état du jeu pour une nouvelle partie identique" \
+               "\n    Ne sort pas du mode jeu contrairement à exit." \
+               "\n    Utilisation : 'reload' "
+    else:
+        if gc.reset_game(env, config):
+            print("    |GamCore: reload game requested.\nNow you can use 'play' when TVn7 show the game.")
+        else:
+            print("    |GamCore: Current state incompatible for reloading.")
+
+
+cam_commandes = {"play": play, "break": break_game, "default": toggle_next_pose, "reload": reload}
+cam_aliases = {"k": "break", "stop": "break", "p": "play", "n": "default", "v": "default", "next_pose": "default"}
 
 
 def Start_interface_cam(config=None, env=None, params=[], **kwargs):
@@ -168,14 +166,11 @@ def Start_interface_cam(config=None, env=None, params=[], **kwargs):
                "value]*'\n      [key value] est une liste de couple où key est la clé d'un paramètre de la config, " \
                "et value la valeur à lui assigner le temps de la sequence "
     else:
-        if env["game_state"] == gc.GameState.HIDLE:
-            loc_conf = config.copy()
-            print("   |===== Passage en mode 'Jeu' =====")
-            env["game_state"] = gc.GameState.WAIT_PLAY
-            bcs.shell(env, cam_commandes, aliases=cam_aliases, config=loc_conf, config_path=env["config_path"],
-                      shell_prompt="TwisterCam [jeu] >>>")
-            env["game_state"] = gc.GameState.HIDLE
-            env["stop"] = False
-            print("   |=====  Sortie du mode 'Jeu' =====")
-        else:
-            print("   |GameState inappropriate for start playing.")
+        loc_conf = config.copy()
+        print("   |===== Passage en mode 'Jeu' =====")
+        #gc.reset_game(env, config)
+        bcs.shell(env, cam_commandes, aliases=cam_aliases, config=loc_conf, config_path=env["config_path"],
+                  shell_prompt="TwisterCam [jeu] >>>")
+        env["game_state"] = gc.GameState.HIDLE
+        env["stop"] = False
+        print("   |=====  Sortie du mode 'Jeu' =====")

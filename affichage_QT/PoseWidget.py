@@ -229,9 +229,8 @@ class PoseWidget(QLabel):
 
 
 def color_switching(tc_win, player_id, new_HTML_color, duration):
-   if duration > 0:
+    if duration > 0:
         new_color = QColor(new_HTML_color)
-        print(player_id, new_HTML_color)
         tc_win.pose_widget.toggle_colors[0][player_id] = new_color
         tc_win.s.repaint_poses.emit(0)
         time.sleep(duration)

@@ -3,6 +3,7 @@ import time
 import threading
 
 import nc_control
+from Game_Core_2 import reset_game
 
 sys.path.append("./affichage_QT")
 import affichage_QT as aqt
@@ -13,24 +14,16 @@ import gameUI as gu
 def init_full(config, env, dev_mode=False, **kwargs):
     if dev_mode:
         print(" |Initiate game data.")
-    env, config = rebuild_interface(config=config, env=env, params=(("dev_mode",) if dev_mode else ()), verbose=dev_mode, **kwargs)
+    rebuild_interface(config=config, env=env, params=(("dev_mode",) if dev_mode else ()), verbose=dev_mode, **kwargs)
     env["silhouette_dict"] = env[
         "tc_win"].pose_widget.pose_dict  # TODO inverser, le cam win devrait reprendre les pose de l'env plutot que l'inverse
-    env, config = reset_game(config=config, env=env, dev_mode=dev_mode, **kwargs)
-    return env, config
-
-
-def reset_game(config, env, dev_mode=False, **kwargs):
-    # TODO move to GameCore
     if dev_mode:
         print(" |Initiate game status data.")
     env["life_values"] = [config.nbr_lifes for k in range(config.nbr_player)]
-    env["tc_win"].s.set_lifes_alive.emit(env["life_values"])
-    env["sequence"] = []  # TODO place sequence generation here
+    env["sequence"] = []
     env["current_validation"] = [False for k in range(config.nbr_player)]
     env["sequence_index"] = 0
     env["game_state"] = gc.GameState.HIDLE
-    return env, config
 
 
 def rebuild_interface(config=None, env=None, params=(), **kwargs):
@@ -51,7 +44,10 @@ def rebuild_interface(config=None, env=None, params=(), **kwargs):
             env["game_state"] = gc.GameState.ENDING
 
         def play_callback_proxy():
-            gc.play(env)
+            if gc.play(env):
+                print("   |GameCore, play command: OK, Starting Game.")
+            else:
+                print("   |GameCore, play command: Not ready, starting aborted.")
 
         env["tc_win"] = aqt.TwistCamWindow.TwistCamWindow("ressources/",
                                                           validation_callback_proxy,
@@ -88,7 +84,8 @@ if __name__ == '__main__':
     conf = TCConfig()
 
     print("|Initiating graphical interface...")
-    env, _ = init_full(conf, {}, dev_mode=("dev_mode" in sys.argv or "dev_mode_g" in sys.argv))
+    env = {}
+    init_full(conf, env, dev_mode=("dev_mode" in sys.argv or "dev_mode_g" in sys.argv))
 
     print("|Generating core thread...")
     c_thread = threading.Thread(target=gc.gamecore_thread,
