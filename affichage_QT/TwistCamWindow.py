@@ -160,7 +160,7 @@ class TwistCamWindow:
             self.play_callback()
 
     class Signaux(QObject):
-        set_timer = pyqtSignal(int)
+        set_timer = pyqtSignal(str)
         set_poses = pyqtSignal(tuple)
         set_lifes_alive = pyqtSignal(list)
         set_poses_visibility = pyqtSignal(tuple)

@@ -34,7 +34,7 @@ def gamecore_thread(env, config: TCConfig, verbose=False, dt=0.2):
                     env["timer_value"] -= dt
                     if not last_rounded_timer_value == round(env["timer_value"]):
                         last_rounded_timer_value = round(env["timer_value"])
-                        env["tc_win"].s.set_timer.emit(last_rounded_timer_value)
+                        env["tc_win"].s.set_timer.emit(str(last_rounded_timer_value))
                         print("    |GameCore, timer changed : %d" % (last_rounded_timer_value))
             time.sleep(dt)
         time.sleep(0.5)
@@ -115,6 +115,7 @@ def end_game(env, config, winner=None):
         env["sequence"] = None
 
         # Display ending feedback
+        env["tc_win"].s.set_timer.emit("^^")
         if winner is not None:
             threading.Thread(target=execute_win_animation, args=(env, config, winner)).start()
         else:
@@ -148,7 +149,7 @@ def reset_game(env, config):
         # try generate env["sequence"] if it doesn't exist yet
         if check_seq_exist(env, config):
             env["tc_win"].s.set_poses.emit(env['sequence'][0][0])
-            env["tc_win"].s.set_timer.emit(env['sequence'][0][1])
+            env["tc_win"].s.set_timer.emit(str(env["sequence"][0][1])) # TODO correct pose delai
             env["game_state"] = GameState.WAIT_PLAY
             return True
     return False
