@@ -29,6 +29,9 @@ class TCConfig:
         # delai des animation de reussite/echec
         self.animation_delay = 2
 
+        # Séquence executé quand un joueur gagne la partie, (intervale entre chaque image, liste des images)
+        self.wi_seq = (0.3, ["Strong8080", "standup8888"]*6 + ["holla25310","holla18516", "holla25310", "holla31916", "holla46043", "holla52584", "holla46043", "holla31916"]*2)
+
         # ------------ Gestion de L'INTERFACE --------------
         # L'identifiant de l'écran a utiliser, a priori -1, testez différentes valeur si le dimensionnement de l'interface est raté.
         self.screen_id = -1

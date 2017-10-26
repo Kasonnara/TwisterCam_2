@@ -13,7 +13,7 @@ def gamecore_thread(env, config: TCConfig, verbose=False, dt=0.2):
     while not (env["game_state"] == GameState.ENDING):
         while env["game_state"] == GameState.PLAYING or env["game_state"] == GameState.WAIT_PLAY:
             if env["sequence"] is None or len(env["sequence"]) <= env["sequence_index"]:
-                end_game(env)
+                end_game(env, config)
                 raise ValueError("Not normal ending!")
             if env["timer_value"] < 0:
                 if config.timer_mode == TimerMode.EACH_POSE:
@@ -26,7 +26,7 @@ def gamecore_thread(env, config: TCConfig, verbose=False, dt=0.2):
                         print("    |GameCore, time-up : everyone lose.")
                     env["life_values"] = [0] * config.nbr_player
                     env["tc_win"].s.set_lifes_alive.emit(env["life_values"])
-                    end_game(env)
+                    end_game(env, config)
             else:
                 # continue game sequence
                 if env["game_state"] == GameState.PLAYING and not env["timer_mode"] == TimerMode.DISABLED:
@@ -84,32 +84,58 @@ def end_round(env, config):
 def toggle_next_pose(env=None, config=None, n=1, **kwargs):
     env["sequence_index"] = env["sequence_index"] + n
     env["current_validation"] = [env["life_values"][k] <= 0 for k in range(config.nbr_player)]
-    if env["sequence_index"] < len(env["sequence"]) \
-       and any(env["life_values"][k] > 0 for k in range(config.nbr_player)):
-        next_poses = env["sequence"][env["sequence_index"]][0]
-        # hide eliminated players
-        next_poses = tuple(pose if env["life_values"][k] > 0 else "" for k, pose in enumerate(next_poses))
-        env["tc_win"].s.set_poses.emit(next_poses)
-        env["tc_win"].s.set_poses_visibility.emit(tuple(not v for v in env["current_validation"]))
-        # reset timer if necessary
-        if config.timer_mode == TimerMode.EACH_POSE:
-            env["timer_value"] = env["sequence"][env["sequence_index"]][1]
-            env["tc_win"].s.set_timer.emit(int(env["timer_value"]))
-        print("    |GameCore, switch next pose", env["sequence"][env["sequence_index"]][0])
-        # Restart timer
-        env["timer_mode"] = config.timer_mode
+    if env["sequence_index"] < len(env["sequence"]):
+        alive_array = [env["life_values"][k] > 0 for k in range(config.nbr_player)]
+        if alive_array.count(True) > 1:
+            next_poses = env["sequence"][env["sequence_index"]][0]
+            # hide eliminated players
+            next_poses = tuple(pose if env["life_values"][k] > 0 else "" for k, pose in enumerate(next_poses))
+            env["tc_win"].s.set_poses.emit(next_poses)
+            env["tc_win"].s.set_poses_visibility.emit(tuple(not v for v in env["current_validation"]))
+            # reset timer if necessary
+            if config.timer_mode == TimerMode.EACH_POSE:
+                env["timer_value"] = env["sequence"][env["sequence_index"]][1]
+                env["tc_win"].s.set_timer.emit(str(env["timer_value"]))
+            print("    |GameCore, switch next pose", env["sequence"][env["sequence_index"]][0])
+            # Restart timer
+            env["timer_mode"] = config.timer_mode
+        else:
+            if alive_array.count(True) == 0:
+                end_game(env, config)
+            else:
+                end_game(env, config, winner=alive_array.index(True))
     else:
-        end_game(env)
+        end_game(env, config)
 
 
-def end_game(env):
+def end_game(env, config, winner=None):
     if env["game_state"] == GameState.WAIT_PLAY or env["game_state"] == GameState.PLAYING:
         env["game_state"] = GameState.WAIT_RELOAD
+        env["timer_mode"] = TimerMode.DISABLED
         env["sequence"] = None
+
+        # Display ending feedback
+        if winner is not None:
+            threading.Thread(target=execute_win_animation, args=(env, config, winner)).start()
+        else:
+            time.sleep(1)
+        # Stop all display
+        env["tc_win"].s.set_poses.emit(tuple("" for k in range(config.nbr_player)))
+        env["tc_win"].s.set_poses_visibility.emit(tuple(False for k in range(config.nbr_player)))
+
         print("    |GameCore, Game ended!")
         return True
     else:
         return False
+
+
+def execute_win_animation(env, config, winner_id):
+    env["tc_win"].s.set_poses_visibility.emit(tuple(k==winner_id for k in range(config.nbr_player)))
+    for p in config.wi_seq[1]:
+        env["tc_win"].s.set_poses.emit(tuple(p if k==winner_id else "" for k in range(config.nbr_player)))
+        time.sleep(config.wi_seq[0])
+
+
 
 
 def reset_game(env, config):

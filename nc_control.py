@@ -43,7 +43,7 @@ class NcReceiver(LineReceiver):
                 self.send_str(
                     "Current game state (%s) is not compatible with 'play' command." % (self.env["game_state"],))
         elif data.startswith(b"k"):
-            if Game_Core_2.end_game(self.env):
+            if Game_Core_2.end_game(self.env, self.config):
                 self.send_str("Game stopped")
             else:
                 self.send_str(
