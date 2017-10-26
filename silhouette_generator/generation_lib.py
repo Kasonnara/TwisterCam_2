@@ -117,7 +117,7 @@ def check_epaisseur(dist_cible, dist_reel, epaisseur, trop_proche=False, trop_lo
 
 
 def generate_sil(a_epaule_gauche, a_epaule_droite, a_bras_gauche, a_bras_droite, a_cuisse_gauche=5, a_cuisse_droite=5,
-                 a_genou_gauche=-5, a_genou_droit=-5, a_tete=0, a_body=0, flip=False, color=[0, 0, 1, 1], epaisseur=2,
+                 a_genou_gauche=-5, a_genou_droit=-5, a_tete=0, a_body=0, a_full_body=0, profile=False, color=[0, 0, 1, 1], epaisseur=2,
                  precision=1, image_sil=None, verbose=True):
     """Trace sur imageSil la silouette
         paramètre :
@@ -136,16 +136,17 @@ def generate_sil(a_epaule_gauche, a_epaule_droite, a_bras_gauche, a_bras_droite,
     """
     tailleY = round(PREVIEW_Y_SIZE * precision)
     tailleX = round(PREVIEW_X_SIZE * precision)
+    largeur_corps = LARGEUR_CORPS if not profile else LARGEUR_CORPS * 0.6
 
     epaisseur_reelle = epaisseur * precision
     # Corps
     pbc = Point(round(tailleX / 2), round(NOMBRIL_Y * precision))
-    full_body_anchor = Bone(pbc, 1, 1, (180 if flip else 0), 1)  # utilisé pour orienter tout le corps
-    bone_buste = Bone(full_body_anchor, LONGUEUR_BUSTE, LARGEUR_CORPS, a_body, precision)
-    bone_epaule_gauche = Bone(bone_buste, LARGEUR_CORPS, LARGEUR_BRAS, 70, precision)
-    bone_epaule_droite = Bone(bone_buste, LARGEUR_CORPS, LARGEUR_BRAS, -70, precision)
-    bone_hanche_gauche = Bone(full_body_anchor, LARGEUR_CORPS / 1.5, LARGEUR_BRAS, 135, precision)
-    bone_hanche_droite = Bone(full_body_anchor, LARGEUR_CORPS / 1.5, LARGEUR_BRAS, -135, precision)
+    full_body_anchor = Bone(pbc, 1, 1, a_full_body, 1)  # utilisé pour orienter tout le corps
+    bone_buste = Bone(full_body_anchor, LONGUEUR_BUSTE if not profile else LONGUEUR_BUSTE + LARGEUR_CORPS *0.4, largeur_corps, a_body, precision)
+    bone_epaule_gauche = Bone(bone_buste, largeur_corps if not profile else 0, LARGEUR_BRAS, 70, precision)
+    bone_epaule_droite = Bone(bone_buste, largeur_corps if not profile else 0, LARGEUR_BRAS, -70, precision)
+    bone_hanche_gauche = Bone(full_body_anchor, largeur_corps / 1.5 if not profile else 0, LARGEUR_BRAS, 135, precision)
+    bone_hanche_droite = Bone(full_body_anchor, largeur_corps / 1.5 if not profile else 0, LARGEUR_BRAS, -135, precision)
 
     # Bras
     bone_bras_droit = Bone(bone_epaule_droite, DEMI_LONGUEUR_BRAS, LARGEUR_BRAS, -20 - a_epaule_droite, precision)
@@ -172,7 +173,7 @@ def generate_sil(a_epaule_gauche, a_epaule_droite, a_bras_gauche, a_bras_droite,
     displayed_bone.append(bone_buste)
 
     # tete
-    bone_cou = Bone(bone_buste, LONGUEUR_COU, LARGEUR_BRAS, a_tete, precision)
+    bone_cou = Bone(bone_buste, LONGUEUR_COU if not profile else LONGUEUR_COU*0.6, LARGEUR_BRAS, a_tete, precision)
     p_tete = bone_cou.get_extremite()
 
     if image_sil is None:
@@ -195,7 +196,7 @@ def generate_sil(a_epaule_gauche, a_epaule_droite, a_bras_gauche, a_bras_droite,
     return image_sil;
 
 
-def pregen(aeg, aed, abg, abd, acg=5, acd=5, agg=-5, agd=-5, at=0, ab=0, flip=False, color=[1, 1, 1, 1], filled=False,
+def pregen(aeg, aed, abg, abd, acg=5, acd=5, agg=-5, agd=-5, at=0, ab=0, a_full_body=0, profile=False, color=[1, 1, 1, 1], filled=False,
            epaisseur=2):
     """Génère une preview de la silhouette, l'affiche
     et enfin demande si elle doit etre conservé
@@ -203,7 +204,7 @@ def pregen(aeg, aed, abg, abd, acg=5, acd=5, agg=-5, agd=-5, at=0, ab=0, flip=Fa
     dans le dossier 'generation_random'
     """
     plt.cla()
-    preview_img = generate_sil(aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, flip, color=[0, 0, 1, 1],
+    preview_img = generate_sil(aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, a_full_body, profile=profile, color=[0, 0, 1, 1],
                                epaisseur=(-1 if filled else epaisseur), precision=1)
     plt.imshow(preview_img)
     plt.pause(0.5)
@@ -213,11 +214,11 @@ def pregen(aeg, aed, abg, abd, acg=5, acd=5, agg=-5, agd=-5, at=0, ab=0, flip=Fa
         import random
         res = res + str(random.randint(0, 10000))
         print("Sauvegarde des preset de génération...")
-        save_pregen_params(res, aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, flip, color, filled, epaisseur)
+        save_pregen_params(res, aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, a_full_body, profile, color, filled, epaisseur)
 
         def HD_gen_thread(): #TODO Trop Shlaggggggg
             print("Génération de l'image HD en background (cela peut prendre quelques minutes)...")
-            img = generate_sil(aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, flip, color=color,
+            img = generate_sil(aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, a_full_body, profile=profile, color=color,
                                epaisseur=(-1 if filled else epaisseur), precision=PRECISION, verbose=False)
             print("Génération en background terminée, sauvegarde de l'image : generation_random/" + res + ".png")
             plt.imsave("generation_random/" + res + ".png", img)
@@ -229,16 +230,16 @@ def pregen(aeg, aed, abg, abd, acg=5, acd=5, agg=-5, agd=-5, at=0, ab=0, flip=Fa
 
 
 
-def save_pregen_params(name, aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, flip, color, filled,
+def save_pregen_params(name, aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, a_full_body, profile, color, filled,
                        epaisseur):
     with open("pregen.py.template", "r") as template:
         with open("pregen_param_saves/" + name + ".py", "w") as destination:
             s = ""
             for l in template:
                 s += l
-            r = s.format(*[aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, flip, color, filled, epaisseur,
-                     PREVIEW_X_SIZE, PREVIEW_Y_SIZE, NOMBRIL_Y, LARGEUR_CORPS, LARGEUR_BRAS, LARGEUR_TETE,
-                     LARGEUR_JAMBE, DEMI_LONGUEUR_BRAS, LONGUEUR_BUSTE, LONGUEUR_COU, DEMI_LONGUEUR_JAMBE, PRECISION])
+            r = s.format(*[aeg, aed, abg, abd, acg, acd, agg, agd, at, ab, a_full_body, profile, color, filled, epaisseur,
+                           PREVIEW_X_SIZE, PREVIEW_Y_SIZE, NOMBRIL_Y, LARGEUR_CORPS, LARGEUR_BRAS, LARGEUR_TETE,
+                           LARGEUR_JAMBE, DEMI_LONGUEUR_BRAS, LONGUEUR_BUSTE, LONGUEUR_COU, DEMI_LONGUEUR_JAMBE, PRECISION])
             destination.write(r)
 
 

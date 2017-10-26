@@ -12,7 +12,8 @@ def generate_random(color=[1, 1, 1, 1], filled=False):
         aed = random.randint(0, 360)
         abg = random.randint(0, 360)
         abd = random.randint(0, 360)
-        sgen.pregen(aeg, aed, abg, abd, color=color, filled=filled)
+        ab = random.randint(-15, 15)
+        sgen.pregen(aeg, aed, abg, abd, ab=ab, color=color, filled=filled)
 
 
 if __name__ == '__main__':
