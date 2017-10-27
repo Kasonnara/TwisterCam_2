@@ -1,8 +1,9 @@
+import random
 import sys
 import threading
 
 from PyQt4.QtCore import QSize, QObject, pyqtSignal, Qt
-from PyQt4.QtGui import QApplication, QDesktopWidget, QVBoxLayout, QBoxLayout, QHBoxLayout
+from PyQt4.QtGui import QApplication, QDesktopWidget, QVBoxLayout, QBoxLayout, QHBoxLayout, QLabel
 
 from LifeWidget import LifeWidget
 from TimerWidget import TimerWidget
@@ -26,7 +27,8 @@ class TwistCamWindow:
                  multi_life_spacing_proportion=0.12,
                  alpha_color="FF00FF",
                  validate_keys=(65, 32, 16777220, 43), # keys : 'a', space, enter, '+'
-                 dev_mode=False):
+                 dev_mode=False,
+                 rage=True):
 
         if dev_mode:  # TODO utiliser logger
             print(" Initalisation TwistCanWindow (en mode développeur)")
@@ -34,6 +36,23 @@ class TwistCamWindow:
         self.main_app = QApplication(sys.argv)
         self.main_app.setOverrideCursor(Qt.BlankCursor)
 
+        if rage:
+            rage_label = QLabel()
+            if random.random() > 0.8:
+                rage_label.setText("TVn7 allez vous faire voire")
+            elif random.random() > 0.8:
+                rage_label.setText("La v1 était déjà opérationnelle sans bug au JT4, peut etre moins belle mais ça passait")
+            elif random.random() > 0.8:
+                rage_label.setText("Là Tout marchait parfaitement des jours à l'avance, la V2 était nickel")
+            elif random.random() > 0.8:
+                rage_label.setText("On se marrait pendant les tests, le public a applaudi la démo.")
+            elif random.random() > 0.8:
+                rage_label.setText("Tous les modos étaitent trop chaud")
+            else:
+                rage_label.setText("TVn7 va niquer ta mère, une KC de 10s et 20s entre chaque...")
+            rage_label.show()
+            self.main_app.exec_()
+            raise ValueError("C'est la faute a TVn7")
         # ----- Analyse des paramètres du constructeur -----
         # Ajouter le '#' dans les html color
         if type(alpha_color) == str and len(alpha_color) == 6:
