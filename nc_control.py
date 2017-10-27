@@ -80,7 +80,7 @@ class NcReceiver(LineReceiver):
                           "r : reload\n" +
                           "h : help \n" +
                           "1|2|3|4: libère la place du modérateur 1, 2, 3 ou 4 en force\n" +
-                          "Sinon le message sera interprété comme une validation.")
+                          "* : Pour tout autre message le joueur qui vous est attribué sera validé.")
 
         else:
             validation_thread = threading.Thread(target=Game_Core_2.validate_player_pose,
