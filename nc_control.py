@@ -33,7 +33,12 @@ class NcReceiver(LineReceiver):
             self.send_str("Too much TCP connexion, not enough players!")
             self.transport.loseConnection()
 
+    def eject(self, n):
+        player_allocation[n] = False
+        self.send_str("Player %d ejected" % n+1)
+
     def dataReceived(self, data:str):
+        global player_allocation
         #print("Receved data from player %d :%s" %(self.allocation, data))
         if data.startswith(b"p"):
             print("Remote play command")
@@ -49,7 +54,6 @@ class NcReceiver(LineReceiver):
                 self.send_str(
                     "Current game state (%s) is not compatible with 'break' command." % (self.env["game_state"],))
         elif data.startswith(b"s"):
-            global player_allocation
             self.send_str("Game state:%s\n%d/%d moderateur connected." %
                           (self.env["game_state"], player_allocation.count(True), len(player_allocation)))
         elif data.startswith(b"r"):
@@ -58,6 +62,14 @@ class NcReceiver(LineReceiver):
             else:
                 self.send_str(
                     "Current game state (%s) is not compatible with 'reset' command." % (self.env["game_state"],))
+        elif data.startswith(b"1"):  #TODO SLaggggg
+            self.eject(0)
+        elif data.startswith(b"2"):
+            self.eject(1)
+        elif data.startswith(b"3"):
+            self.eject(2)
+        elif data.startswith(b"4"):
+            self.eject(4)
 
         elif data.startswith(b"h"):
             self.send_str("Le premier caractère de chaque message envoyé est inspecté \n" +
@@ -67,6 +79,7 @@ class NcReceiver(LineReceiver):
                           "s : status\n" +
                           "r : reload\n" +
                           "h : help \n" +
+                          "1|2|3|4: libère la place du modérateur 1, 2, 3 ou 4 en force\n" +
                           "Sinon le message sera interprété comme une validation.")
 
         else:
