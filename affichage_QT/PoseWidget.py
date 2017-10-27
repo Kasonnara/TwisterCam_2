@@ -24,6 +24,7 @@ class Pose:
         self.pose_name = pose_name
         self.valide = False
         self.proba = 1
+        self.difficulty=0
         if pose_name is None:
             self._init_empty(pose_manager, ressource_directory)
         else:
@@ -43,7 +44,9 @@ class Pose:
         conf_path = ressource_directory + "pose_configs/" + pose_name + ".conf"
         default_conf = {"pose_name": pose_name,
                         "silhouette_filename": "silhouette_storage" + os.sep + pose_name + ".png",
-                        "title_filename": "title_storage" + os.sep + pose_name + "_title.png", "proba": 1}
+                        "title_filename": "title_storage" + os.sep + pose_name + "_title.png",
+                        "proba": 1.0,
+                        "difficulty": 0}
         conf_data = apc.text_conf_param(default_conf, conf_path, warnings_enabled=warnings_enabled, verbose=False,
                                         rewrite_conf_when_fail=force_conf_generation)
 
@@ -59,6 +62,7 @@ class Pose:
             # title_filename = ressource_directory + conf_data["title_filename"]
             self.pose_name = conf_data["pose_name"]
             self.proba = conf_data["proba"]
+            self.difficulty = conf_data["difficulty"]
 
         if os.access(silhouette_filename, os.R_OK):
             self.sil = Silhouette(silhouette_filename)
@@ -72,6 +76,7 @@ class Pose:
         self.valide = True
         self.pose_name = ""
         self.proba = 0
+        self.difficulty = 0
 
     def get_silhouette(self):
         return self.sil
@@ -119,6 +124,7 @@ class PoseWidget(QLabel):
         self.order = ()
         self._load_all_poses(ressource_directory, load_all_images=True, verbose=False,
                              filter_valid=True, dev_mode=dev_mode)
+        self.max_difficulty_level = max([p.difficulty for p in self.pose_dict.values()])
 
         # Init constant for pose drawing
         exemple_sil_pixmap = self.pose_dict[list(self.pose_dict.keys())[1]].get_silhouette().pixmap

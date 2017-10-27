@@ -61,7 +61,8 @@ def call_gen_seq(config=None, env=None, params=[], **kwargs):
                                           env["silhouette_dict"],
                                           config.pose_delay,
                                           config.nbr_player,
-                                          start_pose=config.start_pose)
+                                          start_pose=config.start_pose,
+                                          max_difficulty_level=env["tc_win"].pose_widget.max_difficulty_level)
             # enregistrer le result dans l'env s'il est fructueux
             if not (result == None or len(result[0]) == 0):
                 print("    |Génération Réussie.")

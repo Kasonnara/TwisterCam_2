@@ -1,8 +1,10 @@
 """Module content toutes les fonction de génération de séquence"""
 import random
 
+import math
 
-def Add_Random_Pose(nbr_poses, pose_dict, nbr_player, last_pose, delay):
+
+def Add_Random_Pose(nbr_poses, pose_dict, nbr_player, last_pose, delay, max_difficulty_level):
     """appelé par Generate Sequence pour generer une sequance automatiquement
     Return une liste de nbr_pose élément contenant le nom d'une pose random
     Précondition, le nombre de poses disponnibles (de proba non nulle) doit etre > 1
@@ -14,7 +16,8 @@ def Add_Random_Pose(nbr_poses, pose_dict, nbr_player, last_pose, delay):
         n_pose = tuple(key_list[random.randint(0, len(key_list) - 1)] for k in range(nbr_player))
         validity = [(last_pose[k] == n_pose[k]
                      or pose_dict[n_pose[k]].proba < random.random()
-                     or n_pose[k] == '')
+                     or n_pose[k] == ''
+                     or pose_dict[n_pose[k]].difficulty > math.floor(max_difficulty_level * len(result_seq) / nbr_poses))
                     for k in range(nbr_player)]
         if not any(validity):
             result_seq.append((n_pose, max(variable_delay, 2)))
@@ -26,7 +29,7 @@ def Add_Random_Pose(nbr_poses, pose_dict, nbr_player, last_pose, delay):
     return result_seq
 
 
-def Generate_Sequence(generator_mode, nbr_poses, pose_dict, delay, nbr_player, start_pose="", start_delay=10):
+def Generate_Sequence(generator_mode, nbr_poses, pose_dict, delay, nbr_player, start_pose="", start_delay=10, max_difficulty_level=4):
     """ Génère une séquence de silouette issues de la liste fournies
      Deux silouette identique ne peuvent se suivres
      La séquence généré est ensuite enregistré dans l'environnement comme sequence courante afin de l'envoyer immédiatement sans la selectionner, et en dur dans le fichier de sequence temporaire
@@ -47,7 +50,8 @@ def Generate_Sequence(generator_mode, nbr_poses, pose_dict, delay, nbr_player, s
     if generator_mode == "random":
         print("   |Generating random sequence : lenght ", nbr_poses)
         result_seq = result_seq + Add_Random_Pose(nbr_poses, pose_dict, nbr_player,
-                                                  (("" if len(result_seq) == 0 else result_seq[-1]),) * nbr_player, delay)
+                                                  (("" if len(result_seq) == 0 else result_seq[-1]),) * nbr_player,
+                                                  delay, max_difficulty_level=max_difficulty_level)
     elif generator_mode == "select":
         raise ValueError("Sequence manuelles non implémenté! DSL")
         ## lancer un shell avec draw_func pour bien afficher la liste des poses disponnible et séléctionnées

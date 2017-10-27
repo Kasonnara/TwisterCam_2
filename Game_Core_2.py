@@ -168,7 +168,8 @@ def check_seq_exist(env, config):
                                                 env["silhouette_dict"],
                                                 config.pose_delay,
                                                 config.nbr_player,
-                                                start_pose=config.start_pose)
+                                                start_pose=config.start_pose,
+                                                max_difficulty_level=env["tc_win"].pose_widget.max_difficulty_level)
     if not (env["sequence"] == None or len(env["sequence"]) == 0):
         print("    |Séquence OK.")
         return True
