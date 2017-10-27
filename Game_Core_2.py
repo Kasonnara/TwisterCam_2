@@ -150,7 +150,8 @@ def reset_game(env, config):
         # try generate env["sequence"] if it doesn't exist yet
         if check_seq_exist(env, config):
             env["tc_win"].s.set_poses.emit(env['sequence'][0][0])
-            env["tc_win"].s.set_timer.emit(str(env["sequence"][0][1])) # TODO correct pose delai
+            env["timer_value"] = config.start_pose_delay
+            env["tc_win"].s.set_timer.emit(str(env["timer_value"])) # TODO correct pose delai
             env["game_state"] = GameState.WAIT_PLAY
             return True
     return False
