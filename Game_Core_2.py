@@ -50,8 +50,9 @@ def play(env):
 
 
 def validate_player_pose(env, config, player_id):
-    if env["game_state"] == GameState.PREVIEW \
-       or env["game_state"] == GameState.PLAYING:
+    if (env["game_state"] == GameState.PREVIEW \
+       or env["game_state"] == GameState.PLAYING)\
+       and env["timer_mode"] is not TimerMode.DISABLED:
         if not env["current_validation"][player_id]:
             env["current_validation"][player_id] = True
             print("    |Validation. state:%s" % env["current_validation"])
